@@ -1,0 +1,244 @@
+{% load socialaccount %}
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pixel Game</title>
+    <!-- <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<!-- Ensure jQuery UI is included -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <style>
+        /* Define your custom CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0; 
+        }
+        .logo img {
+            max-height: 50px; 
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .game-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #img {
+            margin-top: 20px;
+            image-rendering: pixelated;            max-width: 100%; 
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+
+
+
+        .pixelated-bg {
+    position: relative;
+    width: 100%; /* Adjust width as needed */
+    height: 500px; /* Adjust height as needed */
+    overflow: hidden;
+}
+
+.pixelated-bg .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.pixelated-bg .content:before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-image: inherit;
+    -webkit-filter: url('#pixelate');
+    filter: url('#pixelate');
+    z-index: 1;
+}
+
+/* SVG Filter */
+@supports (-webkit-filter: url('#pixelate')) or (filter: url('#pixelate')) {
+    #pixelate {
+        filterType: "pixelate";
+        width: 100%;
+        height: 100%;
+        cellSize: 10px; /* Adjust the pixelation level */
+    }
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- {% if user.is_authenticated %}
+            <h1>Welcome, {{ user.username }}!</h1>
+            <a href="{% url 'logout' %}">Logout</a>
+            <a href="{% url 'statistics' %}">Stats</a>
+        {% else %}
+            <h1>Welcome to Pixel Game</h1>
+            <p>Please sign in to continue:</p>
+            <a href="{% provider_login_url 'google' %}">Login with Google</a>
+        {% endif %} -->
+        <header>
+            <div class="logo">
+                <img src="{% static 'trainers.png' %}" alt="Logo">
+            </div>
+            {% if user.is_authenticated %}
+                <div>
+                    <h1>Welcome, {{ user.username }}!</h1>
+                    <a href="{% url 'logout' %}">Logout</a>
+                    <a href="{% url 'statistics' %}">Stats</a>
+                </div>
+            {% else %}
+                <div>
+                    <h1>Welcome to Pixel Game</h1>
+                    <p>Please sign in to continue:</p>
+                    <a href="{% provider_login_url 'google' %}">Login with Google</a>
+                </div>
+            {% endif %}
+        </header>
+        <div class="game-container {% if not game_guessed %}visible{% endif %}">
+            {% if user.is_authenticated %}
+                {% if game %}
+                    {% if is_attempt_done %}
+                        <p>Next image will be: <span id="timer"></span></p>
+                        {% if result %}
+                        <div class="pixelated-bg">
+                            <div class="content" style="background-image: url('{{ game.image.url }}');">
+                            </div>
+                        </div>
+                            {% if result.is_user_win %}
+                                <h1>Congratulations! You Guessed Correctly! '{{ game.title }}'</h1>
+                            {% else %}
+                                <h1>Sorry, You're Out of Attempts. Better Luck Next Time!</h1>
+                                <p>Correct Title: {{ game.title }}</p>
+                                <p>Attempts History: {{ result.attempts_history }}</p>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                    <div class="pixelated-bg">
+                        <div class="content" style="background-image: url('{{ game.image.url }}');">
+                        </div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+                        <filter id="pixelate" x="0" y="0">
+                            <feFlood x="0" y="0" width="100%" height="100%" result="black"/>
+                            <feTurbulence in="black" type="fractalNoise" baseFrequency="0.05 0.05" result="noise"/>
+                            <feColorMatrix in="noise" mode="matrix" values="0 0 0 0 0
+                                                                            0 0 0 0 0
+                                                                            0 0 0 0 0
+                                                                            0 0 0 1 0" result="matrix"/>
+                            <feDisplacementMap in="SourceGraphic" in2="matrix" scale="10" />
+                        </filter>
+                    </svg>
+                    
+                        <form method="post" action="{% url 'guess' %}">
+                            {% csrf_token %}
+                            <label for="guess">Your Guess: {{ request.POST.guess }}</label>
+                            <input type="text" name="guess" id="guess-input" required>
+                            <input type="hidden" name="image_id" value="{{game.id}}" required>
+                            <input type="submit" value="Submit Guess">
+                        </form>
+                        <p>Attempts left: {{attempts_left}}</p>
+                    {% endif %}
+                {% else %}
+                    <p>Next image in: <span id="timer"></span></p>
+                {% endif %}
+            {% else %}
+                <p>Please sign in to play the game.</p>
+            {% if game %}
+                <img src="{{ game.image.url }}" alt="Pixelated Image">
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        {% if remaining_time and user.is_authenticated %}
+            var remainingTime = {{ remaining_time }};
+            var timerElement = document.getElementById('timer');
+
+            function formatTime(seconds) {
+                // Calculate hours, minutes, and seconds
+                var hours = Math.floor(seconds / 3600);
+                var minutes = Math.floor((seconds % 3600) / 60);
+                var seconds = seconds % 60;
+
+                var formattedTime = '';
+                if (hours > 0) {
+                    formattedTime += hours.toString().padStart(2, '0') + "h ";
+                }
+                if (hours > 0 || minutes > 0) {
+                    formattedTime += minutes.toString().padStart(2, '0') + "m ";
+                }
+                formattedTime += seconds.toString().padStart(2, '0') + "s";
+
+                return formattedTime.trim();
+            }
+
+            function updateTimer() {
+                if (remainingTime >= 0) {
+                    timerElement.innerText = formatTime(remainingTime);
+                    remainingTime--;
+                } else {
+                    clearInterval(timerInterval);
+                    timerElement.innerText = "Refreshing...";
+                    location.reload();
+                }
+            }
+
+            var timerInterval = setInterval(updateTimer, 1000);
+
+        {% endif %}
+        
+    </script>
+    <script>
+        $(function () {
+            var availableTitles = [
+                {% for game in games %}
+                    "{{ game.title }}",
+                {% endfor %}
+            ];
+            $("#guess-input").autocomplete({
+                source: availableTitles
+            });
+        });
+    </script>
+</body>
+</html>
+

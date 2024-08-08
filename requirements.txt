@@ -1,0 +1,6 @@
+Django>=3.0,<4.0
+djangorestframework>=3.11,<4.0
+djangorestframework-simplejwt>=4.4,<5.0
+django-cors-headers>=3.5,<4.0
+django-allauth>=0.42,<1.0
+django-autocomplete-light>=3.5,<4.0

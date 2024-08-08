@@ -1,0 +1,12 @@
+{% load socialaccount %}
+
+{% block content %}
+    <h2>Sign Up</h2>
+    {% if user.is_authenticated %}
+        <p>Welcome, {{ user.username }}!</p>
+    {% else %}
+        <a href="{% provider_login_url 'google' %}">Sign up with Google</a>
+        <br>
+        <a href="{% provider_login_url 'facebook' %}">Sign up with Facebook</a>
+    {% endif %}
+{% endblock %}

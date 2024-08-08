@@ -1,0 +1,73 @@
+{% load socialaccount %}
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pixel Game</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function () {
+        var availableTitles = [
+            {% for title in titles %}
+                "{{ title }}",
+            {% endfor %}
+        ];
+        $("#guess-input").autocomplete({
+            source: availableTitles
+        });
+    });
+    </script>
+    <style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0; 
+        }
+        .logo img {
+            max-height: 50px; 
+        }
+    </style>
+</head>
+<body>
+    <!-- {% if user.is_authenticated %}
+        <h1>Welcome, {{ user.username }}!</h1>
+        <a href="{% url 'account_logout' %}">Logout</a>
+    {% else %}
+        <h1>Welcome to Pixel Game</h1>
+        <p>Please sign in to continue:</p>
+        <a href="{% provider_login_url 'google' %}">Login with Google</a>
+    {% endif %} -->
+    <header>
+        <div class="logo">
+            <img src="{% static 'trainers.png' %}" alt="Logo">
+        </div>
+        {% if user.is_authenticated %}
+            <div>
+                <h1>Welcome, {{ user.username }}!</h1>
+                <a href="{% url 'logout' %}">Logout</a>
+                <a href="{% url 'statistics' %}">Stats</a>
+            </div>
+        {% else %}
+            <div>
+                <h1>Welcome to Pixel Game</h1>
+                <p>Please sign in to continue:</p>
+                <a href="{% provider_login_url 'google' %}">Login with Google</a>
+            </div>
+        {% endif %}
+    </header>
+    <h1>Guess the Image Title</h1>
+    <img src="{{ game.image.url }}" style="filter: blur({{ game.pixelation_level }}px);">
+    <form method="post" action="{% url 'guess' %}">
+        {% csrf_token %}
+        <input type="text" name="guess" id="guess-input" required>
+        <input type="submit" value="Submit Guess">
+    </form>
+    
+    <p>Attempts left: {{ request.session.attempts }}</p>
+</body>
+</html>
