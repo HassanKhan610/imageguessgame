@@ -2,8 +2,6 @@
 
 ## Project Setup:
 - Clone the repository
-- Add your google authentication credentials in admin site (social app model)
-- move example.com to other table in (social app model)
 - Go to http://127.0.0.1:8000 to login/signup to play the game
 
 ## apply migration:
@@ -16,11 +14,10 @@ python manage.py createsuperuser
 ## run the server:
 python manage.py runserver
 
-### Go to admin dashboard:
-Add some images
-
-## Admin:
+## Admin Dashboard:
 - http://127.0.0.1:8000/admin/
+- Add your google authentication credentials in admin site (social app model)
+- move example.com to other table in (social app model)
 - admin can upload multiple pictures for users to play the game with.
 
 ## User
